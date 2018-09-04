@@ -3,10 +3,10 @@
 static xmlSecKeysMngrPtr getKeyManager(char* keyStr, unsigned int keyLength, char *keyName) {
   xmlSecKeysMngrPtr mngr;
   xmlSecKeyPtr key;
-  
+
   /* create and initialize keys manager, we use a simple list based
    * keys manager, implement your own xmlSecKeysStore klass if you need
-   * something more sophisticated 
+   * something more sophisticated
    */
   mngr = xmlSecKeysMngrCreate();
   if(mngr == NULL) {
@@ -17,8 +17,8 @@ static xmlSecKeysMngrPtr getKeyManager(char* keyStr, unsigned int keyLength, cha
     rb_raise(rb_eDecryptionError, "failed to initialize keys manager.");
     xmlSecKeysMngrDestroy(mngr);
     return(NULL);
-  }    
-  
+  }
+
   /* load private RSA key */
   // key = xmlSecCryptoAppKeyLoad(key_file, xmlSecKeyDataFormatPem, NULL, NULL, NULL);
   key = xmlSecCryptoAppKeyLoadMemory((xmlSecByte *)keyStr,
@@ -35,13 +35,13 @@ static xmlSecKeysMngrPtr getKeyManager(char* keyStr, unsigned int keyLength, cha
   /* set key name to the file name, this is just an example! */
   if(xmlSecKeySetName(key, BAD_CAST keyName) < 0) {
     rb_raise(rb_eDecryptionError, "failed to set key name");
-    xmlSecKeyDestroy(key);  
+    xmlSecKeyDestroy(key);
     xmlSecKeysMngrDestroy(mngr);
     return(NULL);
   }
-      
-  /* add key to keys manager, from now on keys manager is responsible 
-   * for destroying key 
+
+  /* add key to keys manager, from now on keys manager is responsible
+   * for destroying key
    */
   if(xmlSecCryptoAppDefaultKeysMngrAdoptKey(mngr, key) < 0) {
     rb_raise(rb_eDecryptionError, "failed to add key to keys manager");
@@ -71,10 +71,10 @@ VALUE encrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
   keyLength = RSTRING_LEN(rb_key);
   keyName   = RSTRING_PTR(rb_key_name);
 
-  // create encryption template to encrypt XML file and replace 
+  // create encryption template to encrypt XML file and replace
   // its content with encryption result
   encDataNode = xmlSecTmplEncDataCreate(doc, xmlSecTransformDes3CbcId,
-                              NULL, xmlSecTypeEncElement, NULL, NULL);
+                              NULL, xmlSecTypeEncContent, NULL, NULL);
   if(encDataNode == NULL) {
     rb_raise(rb_eEncryptionError, "failed to create encryption template");
     goto done;
@@ -154,7 +154,7 @@ VALUE encrypt_with_key(VALUE self, VALUE rb_key_name, VALUE rb_key) {
     rb_raise(rb_eEncryptionError, "encryption failed");
     goto done;
   }
-  
+
   // the template is inserted in the doc, so don't free it
   encDataNode = NULL;
   encKeyNode = NULL;
